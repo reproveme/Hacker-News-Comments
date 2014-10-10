@@ -42,8 +42,8 @@ var HNComment = function(i,d) {
 	});
 
 	self.open_replies = function() {
-		var replies = window.open();
-		replies.document.write((self.comments() || []).join(", "));
+		var replies = window.open(window.location.href.split("id=")[0] + "?id=" + d);
+		// replies.document.write((self.comments() || []).join(", "));
 	};
 };
 
@@ -56,12 +56,15 @@ ko.components.register('hacker-news-comments', {
 		self.comments_count = ko.observable(0);
 		self.comments = ko.observableArray([]);
 		self.score = ko.observable(0);
+		
+		var id = 7566069;
+		try { id = parseInt(window.location.href.split("id=")[1]); } catch (ex) {}
 
-		$.getJSON("https://hacker-news.firebaseio.com/v0/item/7566069.json", function(data) {
+		$.getJSON("https://hacker-news.firebaseio.com/v0/item/"+id+".json", function(data) {
 			self.name(data.by);
-			self.title(data.title);
+			self.title(data.title || data.text);
 			self.comments_count(data.kids.length);
-			self.score(data.score);
+			self.score(data.score || "?");
 
 			$.each(data.kids, function(i,d) {
 				self.comments.push(new HNComment(i,d));
