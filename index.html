@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Hacker News Comments</title>
+	<script type='text/javascript' src='jquery-2.1.1.min.js'></script>
+	<script type='text/javascript' src='knockout-3.2.0.js'></script>
+</head>
+<body>
+
+<template id="hacker-news-comments">
+<div class="story">
+<span data-bind="text: title"></span><br />
+<span data-bind="text: score"></span> points by <span data-bind="text: name"></span> | <span data-bind="text: comments_count"></span> comments
+</div>
+<ol class="comments" data-bind="foreach: comments">
+<li>
+<div class="comment">
+<span data-bind="text: name"></span> | <a href="#open replies" data-bind="click: open_replies"><span data-bind="text: comments_count"></span> replies</a> <br /><br />
+<span data-bind="html: comment"></span>
+</div>
+</li>
+</ol>
+</template>
+
+<hacker-news-comments></hacker-news-comments>
+
+<script type="text/javascript">
+var HNComment = function(i,d) {
+	var self = this;
+	self.name = ko.observable(i);
+	self.comment = ko.observable("");
+	self.comments_count = ko.observable(0);
+	self.comments = ko.observableArray([]);
+	self.link = ko.observable(d);
+
+
+	$.getJSON("https://hacker-news.firebaseio.com/v0/item/"+d+".json", function(data){
+		self.name(data.by);
+		self.comment(data.text);
+		self.comments_count((data.kids || []).length);
+		self.comments(data.kids);
+	});
+
+	self.open_replies = function() {
+		var replies = window.open();
+		replies.document.write((self.comments() || []).join(", "));
+	};
+};
+
+ko.components.register('hacker-news-comments', {
+	template: { element:"hacker-news-comments" },
+	viewModel: function () {
+		var self = this;
+		self.name = ko.observable('Name');
+		self.title = ko.observable('Title');
+		self.comments_count = ko.observable(0);
+		self.comments = ko.observableArray([]);
+		self.score = ko.observable(0);
+
+		$.getJSON("https://hacker-news.firebaseio.com/v0/item/7566069.json", function(data) {
+			self.name(data.by);
+			self.title(data.title);
+			self.comments_count(data.kids.length);
+			self.score(data.score);
+
+			$.each(data.kids, function(i,d) {
+				self.comments.push(new HNComment(i,d));
+			});
+		});
+	}
+});
+ 
+ko.applyBindings();	
+</script>
+</body>
+</html>
