@@ -58,7 +58,7 @@ ko.components.register('hacker-news-comments', {
 		self.score = ko.observable(0);
 		
 		var id = 7566069;
-		try { id = parseInt(window.location.href.split("id=")[1]); } catch (ex) {}
+		try { id = parseInt(window.location.href.split("id=")[1]) || id; } catch (ex) {}
 
 		$.getJSON("https://hacker-news.firebaseio.com/v0/item/"+id+".json", function(data) {
 			self.name(data.by);
